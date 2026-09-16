@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<title>RUNNING MATES</title>
+<style>
+  :root{
+    --ice-0:#F5F9FC;
+    --ice-1:#EAF1F7;
+    --ice-line:#D9E4EC;
+    --navy:#0F2233;
+    --navy-soft:#4C6478;
+    --ember:#FF5A36;
+    --ember-dark:#E8471F;
+    --frost-blue:#2E7DE0;
+    --leaf:#1FA25A;
+    --gold:#E0A400;
+    --card:#FFFFFF;
+    --radius-l:20px;
+    --radius-m:14px;
+    --radius-s:9px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--ice-0);
+    color:var(--navy);
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    width:100%;
+    max-width:440px;
+    min-height:100vh;
+    min-height:100dvh;
+    background:var(--ice-0);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    overflow-x:hidden;
+  }
+  .screen{
+    flex:1;
+    padding:22px 20px 100px;
+    display:none;
+    animation:fadeIn .25s ease;
+  }
+  .screen.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .topbar{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;}
+  .brand{font-size:15px;font-weight:800;letter-spacing:.02em;color:var(--navy);display:flex;align-items:center;gap:6px;}
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--ember);display:inline-block;}
+  .settings-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--ice-line);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;}
+
+  .card{background:var(--card);border:1px solid var(--ice-line);border-radius:var(--radius-l);padding:20px;margin-bottom:14px;}
+  .card-tight{padding:16px 18px;}
+
+  h1{font-size:26px;margin:0 0 4px;font-weight:800;letter-spacing:-0.01em;}
+  h2{font-size:17px;margin:0 0 12px;font-weight:750;}
+  .muted{color:var(--navy-soft);font-size:13.5px;line-height:1.5;}
+
+  .hero-goal{display:flex;justify-content:space-between;align-items:flex-end;}
+  .hero-goal .big{font-size:40px;font-weight:800;line-height:1;letter-spacing:-0.02em;}
+  .hero-goal .unit{font-size:16px;font-weight:600;color:var(--navy-soft);}
+  .progress-track{height:10px;border-radius:6px;background:var(--ice-1);overflow:hidden;margin-top:14px;}
+  .progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--ember),var(--gold));transition:width .4s ease;}
+  .streak-row{display:flex;gap:6px;margin-top:14px;}
+  .streak-day{flex:1;text-align:center;font-size:11px;color:var(--navy-soft);}
+  .streak-day .pip{width:100%;aspect-ratio:1;border-radius:8px;background:var(--ice-1);display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:4px;}
+  .streak-day .pip.on{background:linear-gradient(160deg,var(--ember),var(--ember-dark));}
+
+  .feed-item{display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--ice-1);}
+  .feed-item:last-child{border-bottom:none;}
+  .feed-avatar{width:34px;height:34px;border-radius:50%;flex-shrink:0;background:var(--ice-1);display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .feed-text{font-size:13.5px;line-height:1.45;}
+  .feed-time{font-size:11.5px;color:var(--navy-soft);margin-top:1px;}
+  .feed-cheers{display:flex;gap:6px;margin-top:6px;}
+  .cheer-pill{font-size:11.5px;background:var(--ice-1);border-radius:20px;padding:3px 9px;border:none;color:var(--navy);cursor:pointer;}
+
+  .btn{display:block;width:100%;text-align:center;padding:16px;border-radius:var(--radius-m);font-size:16px;font-weight:750;border:none;cursor:pointer;letter-spacing:-0.01em;}
+  .btn-primary{background:var(--ember);color:#fff;}
+  .btn-primary:active{background:var(--ember-dark);}
+  .btn-primary:disabled{opacity:.5;}
+  .btn-secondary{background:var(--ice-1);color:var(--navy);}
+  .btn-outline{background:transparent;color:var(--navy);border:1.5px solid var(--ice-line);}
+  .btn-danger{background:var(--navy);color:#fff;}
+  .btn-row{display:flex;gap:10px;}
+  .btn-row .btn{flex:1;}
+
+  .run-splash{text-align:center;padding-top:26px;}
+  .run-splash .paw{font-size:52px;margin-bottom:6px;}
+  .gps-pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--navy-soft);background:var(--ice-1);padding:7px 14px;border-radius:20px;margin:16px 0 26px;}
+  .gps-pill.ready{color:var(--leaf);}
+  .gps-pill .blip{width:7px;height:7px;border-radius:50%;background:currentColor;animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  .goal-set{display:flex;align-items:center;justify-content:center;gap:14px;margin:10px 0 22px;}
+  .goal-set button{width:38px;height:38px;border-radius:50%;border:1px solid var(--ice-line);background:var(--card);font-size:18px;cursor:pointer;color:var(--navy);}
+  .goal-set .val{font-size:22px;font-weight:800;min-width:90px;}
+
+  .run-stat-main{text-align:center;padding:26px 0 6px;}
+  .run-stat-main .val{font-size:64px;font-weight:800;letter-spacing:-0.02em;line-height:1;}
+  .run-stat-main .lbl{font-size:13px;color:var(--navy-soft);margin-top:6px;font-weight:600;}
+  .run-sub-stats{display:flex;justify-content:space-around;margin:22px 0 30px;}
+  .run-sub-stats .item{text-align:center;}
+  .run-sub-stats .item .v{font-size:22px;font-weight:750;}
+  .run-sub-stats .item .l{font-size:11.5px;color:var(--navy-soft);margin-top:3px;}
+  .run-status{text-align:center;font-size:13px;font-weight:600;margin-bottom:22px;}
+  .run-status.tracking{color:var(--leaf);}
+  .run-status.paused{color:var(--gold);}
+  .run-status.error{color:var(--ember);}
+  .wakelock-note{text-align:center;font-size:11.5px;color:var(--navy-soft);margin-top:14px;}
+
+  .result-hero{text-align:center;padding:18px 0 6px;}
+  .result-hero .emoji{font-size:44px;}
+  .result-hero .dist{font-size:48px;font-weight:800;margin-top:6px;}
+  .badge{display:inline-block;margin-top:10px;background:var(--ice-1);color:var(--ember-dark);font-weight:700;font-size:13px;padding:6px 14px;border-radius:20px;}
+  .memo-input{width:100%;border:1px solid var(--ice-line);border-radius:var(--radius-m);padding:12px 14px;font-size:14px;font-family:inherit;resize:none;background:var(--ice-0);margin-bottom:14px;}
+
+  .path-svg-wrap{background:var(--ice-1);border-radius:var(--radius-m);padding:10px;margin-top:14px;}
+  .path-svg-wrap svg{width:100%;height:auto;display:block;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:16px;}
+  .tab{flex:1;text-align:center;padding:10px;border-radius:var(--radius-s);font-size:13px;font-weight:650;background:var(--ice-1);color:var(--navy-soft);cursor:pointer;}
+  .tab.active{background:var(--navy);color:#fff;}
+  .rank-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--ice-1);}
+  .rank-row:last-child{border-bottom:none;}
+  .rank-num{width:26px;text-align:center;font-weight:800;font-size:14px;color:var(--navy-soft);}
+  .rank-row.me .rank-num{color:var(--ember);}
+  .rank-avatar{width:32px;height:32px;border-radius:50%;background:var(--ice-1);display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .rank-name{flex:1;font-size:14.5px;font-weight:600;}
+  .rank-val{font-size:14.5px;font-weight:750;}
+
+  .room-code-box{display:flex;align-items:center;justify-content:space-between;background:var(--ice-1);border-radius:var(--radius-m);padding:14px 16px;margin-bottom:14px;}
+  .room-code-box .code{font-size:19px;font-weight:800;letter-spacing:.04em;}
+  .sync-note{font-size:12px;color:var(--navy-soft);display:flex;align-items:center;gap:6px;margin-bottom:12px;}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--leaf);flex-shrink:0;}
+  .sync-dot.pending{background:var(--gold);}
+  .sync-dot.off{background:var(--navy-soft);}
+
+  .profile-head{text-align:center;padding:10px 0 6px;}
+  .profile-avatar{width:64px;height:64px;border-radius:50%;background:var(--ice-1);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 10px;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px;}
+  .stat-box{background:var(--ice-1);border-radius:var(--radius-m);padding:14px;}
+  .stat-box .v{font-size:22px;font-weight:800;}
+  .stat-box .l{font-size:12px;color:var(--navy-soft);margin-top:2px;}
+  .history-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--ice-1);cursor:pointer;}
+  .history-row:last-child{border-bottom:none;}
+  .history-row .d{font-size:13px;color:var(--navy-soft);}
+  .history-row .m{font-size:14.5px;font-weight:700;}
+  .history-row .p{font-size:12.5px;color:var(--navy-soft);}
+
+  .chart-wrap{display:flex;align-items:flex-end;gap:8px;height:110px;margin-top:6px;}
+  .chart-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .chart-bar{width:60%;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,var(--ember),var(--gold));}
+  .chart-lbl{font-size:10.5px;color:var(--navy-soft);margin-top:6px;}
+
+  .achv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px;}
+  .achv{text-align:center;padding:12px 4px;border-radius:var(--radius-m);background:var(--ice-1);opacity:.35;}
+  .achv.unlocked{opacity:1;background:linear-gradient(160deg,#FFF3EE,#FFE4D8);}
+  .achv .ic{font-size:22px;}
+  .achv .t{font-size:10.5px;font-weight:650;margin-top:4px;line-height:1.3;}
+
+  .empty-state{text-align:center;padding:26px 10px;color:var(--navy-soft);font-size:13.5px;}
+
+  .navbar{position:sticky;bottom:0;left:0;right:0;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-top:1px solid var(--ice-line);display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom));}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border-radius:12px;color:var(--navy-soft);cursor:pointer;font-size:10.5px;font-weight:650;}
+  .nav-item .ic{font-size:19px;}
+  .nav-item.active{color:var(--ember);}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(15,34,51,.4);z-index:50;display:none;align-items:flex-end;justify-content:center;}
+  .modal-backdrop.active{display:flex;}
+  .modal{width:100%;max-width:440px;background:var(--card);border-radius:22px 22px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom));max-height:82vh;overflow-y:auto;}
+  .modal-handle{width:36px;height:4px;background:var(--ice-line);border-radius:3px;margin:0 auto 16px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12.5px;font-weight:650;color:var(--navy-soft);margin-bottom:6px;}
+  .field input,.field select{width:100%;padding:12px 14px;border-radius:var(--radius-s);border:1px solid var(--ice-line);font-size:14.5px;font-family:inherit;background:var(--ice-0);color:var(--navy);}
+  .seg{display:flex;background:var(--ice-1);border-radius:10px;padding:3px;}
+  .seg button{flex:1;padding:9px;border:none;background:transparent;border-radius:8px;font-size:13px;font-weight:650;color:var(--navy-soft);cursor:pointer;}
+  .seg button.active{background:var(--card);color:var(--navy);box-shadow:0 1px 3px rgba(15,34,51,.12);}
+
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 20px;border-radius:20px;font-size:13.5px;font-weight:600;z-index:80;opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;max-width:85%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  .boot-screen{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center;}
+  .boot-screen .paw{font-size:56px;margin-bottom:10px;}
+
+  ::-webkit-scrollbar{display:none;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ ONBOARDING ============ -->
+  <section class="screen active" id="screen-onboard">
+    <div class="boot-screen">
+      <div class="paw">🏃</div>
+      <h1>RUNNING MATES</h1>
+      <p class="muted" style="margin-bottom:22px;">겨울방학 친구들과 함께하는<br>러닝 기록 &amp; 챌린지</p>
+      <div class="card" style="width:100%;text-align:left;">
+        <div class="field">
+          <label>닉네임</label>
+          <input type="text" id="ob-nickname" placeholder="친구들에게 보여질 이름">
+        </div>
+        <div class="field">
+          <label>아바타</label>
+          <div class="seg" id="ob-avatar-seg"></div>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>오늘의 목표 거리 (km)</label>
+          <input type="number" id="ob-goal" value="5" step="0.5" min="0.5">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="finishOnboarding()">시작하기</button>
+    </div>
+  </section>
+
+  <!-- ============ HOME ============ -->
+  <section class="screen" id="screen-home">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span>RUNNING MATES</div>
+      <button class="settings-btn" onclick="openSettings()">⚙️</button>
+    </div>
+
+    <div class="card">
+      <div class="muted" id="home-date">겨울방학 러닝</div>
+      <div class="hero-goal">
+        <div><div class="big" id="home-today-km">0.0</div></div>
+        <div class="unit" id="home-goal-lbl">/ 5.0 km 목표</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="home-progress" style="width:0%"></div></div>
+      <div class="streak-row" id="streak-row"></div>
+    </div>
+
+    <div class="card">
+      <h2>📢 친구 활동</h2>
+      <div id="feed-list"></div>
+      <p class="muted" id="feed-hint" style="margin-top:8px;"></p>
+    </div>
+
+    <button class="btn btn-primary" onclick="goTo('run-start')">🏃 오늘 러닝 시작하기</button>
+  </section>
+
+  <!-- ============ RUN: START ============ -->
+  <section class="screen" id="screen-run-start">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span>RUNNING MATES</div>
+      <div></div>
+    </div>
+    <div class="run-splash">
+      <div class="paw">🏃</div>
+      <h1 id="rs-title">겨울방학 러닝</h1>
+      <p class="muted">오늘의 목표</p>
+      <div class="goal-set">
+        <button onclick="adjustGoal(-0.5)">−</button>
+        <div class="val"><span id="rs-goal-val">5.0</span> km</div>
+        <button onclick="adjustGoal(0.5)">+</button>
+      </div>
+      <div class="gps-pill" id="gps-pill"><span class="blip"></span><span id="gps-pill-text">🛰️ GPS 준비 중</span></div>
+    </div>
+    <button class="btn btn-primary" id="start-run-btn" onclick="startRun()">🏃 러닝 시작</button>
+    <p class="wakelock-note">시작하면 화면이 자동으로 꺼지지 않도록 잠금을 막아둬요. (완전한 화면 꺼짐 상태 측정은 브라우저 한계로 보장하기 어려워요 — 아래 안내 참고)</p>
+  </section>
+
+  <!-- ============ RUN: ACTIVE ============ -->
+  <section class="screen" id="screen-run-active">
+    <div class="run-stat-main">
+      <div class="val" id="run-dist">0.00</div>
+      <div class="lbl">km · 거리</div>
+    </div>
+    <div class="run-sub-stats">
+      <div class="item"><div class="v" id="run-time">00:00</div><div class="l">시간</div></div>
+      <div class="item"><div class="v" id="run-pace">-'--"</div><div class="l">페이스 /km</div></div>
+    </div>
+    <div class="run-status tracking" id="run-status">🛰️ GPS 측정 중</div>
+    <div class="btn-row" style="margin-bottom:10px;">
+      <button class="btn btn-secondary" id="pause-btn" onclick="togglePause()">⏸ 일시정지</button>
+    </div>
+    <button class="btn btn-danger" onclick="stopRun()">■ 러닝 종료</button>
+  </section>
+
+  <!-- ============ RUN: RESULT ============ -->
+  <section class="screen" id="screen-result">
+    <div class="card result-hero">
+      <div class="emoji">🎉</div>
+      <h2 style="margin-top:6px;">러닝 완료!</h2>
+      <div class="dist"><span id="res-dist">0.00</span> km</div>
+      <div class="run-sub-stats" style="margin-top:14px;">
+        <div class="item"><div class="v" id="res-time">00:00</div><div class="l">시간</div></div>
+        <div class="item"><div class="v" id="res-pace">-'--"</div><div class="l">평균 페이스</div></div>
+      </div>
+      <div id="res-badge"></div>
+      <div class="path-svg-wrap" id="res-path-wrap" style="display:none;">
+        <div id="res-path-svg"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>메모</h2>
+      <textarea class="memo-input" id="res-memo" rows="2" placeholder="오늘의 러닝은 어땠나요?"></textarea>
+      <button class="btn btn-primary" id="save-run-btn" onclick="saveRun()">기록 저장</button>
+    </div>
+  </section>
+
+  <!-- ============ RANKING ============ -->
+  <section class="screen" id="screen-rank">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span>친구 순위</div>
+      <button class="settings-btn" onclick="openRoomModal()">👥</button>
+    </div>
+    <div class="card card-tight">
+      <div class="room-code-box">
+        <div>
+          <div class="muted" style="margin-bottom:2px;">러닝방</div>
+          <div class="code" id="rank-room-code">방을 만들어보세요</div>
+        </div>
+        <button class="btn btn-outline" style="width:auto;padding:9px 14px;font-size:13px;" onclick="openRoomModal()">방 관리</button>
+      </div>
+      <div class="sync-note"><span class="sync-dot" id="sync-dot"></span><span id="sync-text">동기화 상태</span></div>
+    </div>
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" data-metric="total" onclick="setRankTab('total')">총 거리</div>
+        <div class="tab" data-metric="count" onclick="setRankTab('count')">러닝 횟수</div>
+        <div class="tab" data-metric="longest" onclick="setRankTab('longest')">최장 거리</div>
+      </div>
+      <div id="rank-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ MY RECORDS ============ -->
+  <section class="screen" id="screen-profile">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span>내 기록</div>
+      <button class="settings-btn" onclick="openSettings()">⚙️</button>
+    </div>
+    <div class="profile-head">
+      <div class="profile-avatar" id="profile-avatar">🏃</div>
+      <h1 id="profile-name">러너</h1>
+    </div>
+    <div class="card">
+      <div class="stat-grid">
+        <div class="stat-box"><div class="v" id="p-total">0.0 km</div><div class="l">총 거리</div></div>
+        <div class="stat-box"><div class="v" id="p-count">0회</div><div class="l">러닝 횟수</div></div>
+        <div class="stat-box"><div class="v" id="p-avg">0.0 km</div><div class="l">평균 거리</div></div>
+        <div class="stat-box"><div class="v" id="p-longest">0.0 km</div><div class="l">최장 거리</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>🏅 업적</h2>
+      <div class="achv-grid" id="achv-grid"></div>
+    </div>
+    <div class="card">
+      <h2>📈 주간 거리</h2>
+      <div class="chart-wrap" id="chart-wrap"></div>
+    </div>
+    <div class="card">
+      <h2>기록 <span class="muted" id="pending-badge"></span></h2>
+      <div id="history-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar">
+    <div class="nav-item active" data-screen="home" onclick="goTo('home')"><span class="ic">🏠</span>홈</div>
+    <div class="nav-item" data-screen="run-start" onclick="goTo('run-start')"><span class="ic">🏃</span>러닝</div>
+    <div class="nav-item" data-screen="rank" onclick="goTo('rank')"><span class="ic">🏆</span>순위</div>
+    <div class="nav-item" data-screen="profile" onclick="goTo('profile')"><span class="ic">👤</span>내 기록</div>
+  </nav>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-backdrop" id="settings-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>⚙️ 설정</h2>
+    <div class="field">
+      <label>닉네임</label>
+      <input type="text" id="set-nickname" placeholder="닉네임 입력">
+    </div>
+    <div class="field">
+      <label>기본 목표 거리 (km)</label>
+      <input type="number" id="set-goal" step="0.5" min="0.5">
+    </div>
+    <div class="field">
+      <label>거리 단위</label>
+      <div class="seg">
+        <button id="unit-km" onclick="setUnit('km')" class="active">km</button>
+        <button id="unit-mi" onclick="setUnit('mi')">mi</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveSettings()">저장</button>
+    <button class="btn btn-outline" style="margin-top:10px;" onclick="closeModal('settings-modal')">닫기</button>
+  </div>
+</div>
+
+<!-- Room Modal -->
+<div class="modal-backdrop" id="room-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>👥 러닝방</h2>
+    <p class="muted" style="margin-bottom:14px;">방을 만들고 <b>이 웹사이트 주소(URL)와 방 코드</b>를 친구에게 공유해줘. 친구가 같은 주소에서 같은 코드로 참가하면 Supabase를 통해 순위와 활동이 실시간으로 연동돼.</p>
+    <div class="field">
+      <label>내 러닝방 코드</label>
+      <div class="room-code-box"><div class="code" id="room-modal-code">-</div>
+        <button class="btn btn-outline" style="width:auto;padding:9px 14px;font-size:13px;" onclick="regenerateRoom()">새로 만들기</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>코드로 참가하기</label>
+      <input type="text" id="join-code" placeholder="예: WINTER-8392">
+    </div>
+    <button class="btn btn-primary" onclick="joinRoom()">참가하기</button>
+    <button class="btn btn-outline" style="margin-top:10px;" onclick="closeModal('room-modal')">닫기</button>
+  </div>
+</div>
+
+<!-- Run Detail Modal -->
+<div class="modal-backdrop" id="detail-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="detail-content"></div>
+    <button class="btn btn-outline" style="margin-top:14px;" onclick="closeModal('detail-modal')">닫기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =====================================================
+   RUNNING MATES
+   Stage 1 UI + Stage 2 real GPS + Stage 3 real friend
+   sharing (Supabase DB + Realtime) + Stage 4 wake-lock
+   + offline queue + achievements + GPS path view
+
+   개인 기록(프로필/러닝 히스토리/업적)은 이 기기의
+   localStorage에 저장되고, 친구방(순위/활동피드)은
+   Supabase 데이터베이스에 저장돼서 어떤 기기·브라우저
+   에서 열어도 실시간으로 같이 보인다.
+===================================================== */
+
+/* ---------------- Supabase 연결 설정 ----------------
+   1) supabase.com 프로젝트의 Settings → API Keys 에서
+      Project URL 과 Publishable key(sb_publishable_...)를
+      복사해서 아래 두 줄에 붙여넣기.
+   2) SQL Editor에서 rooms / room_members / feed_events
+      테이블을 만든 뒤 사용해야 동작함.
+------------------------------------------------------ */
+const SUPABASE_URL = 'https://xxxxxxxxxxxx.supabase.co'; // TODO: Project URL로 교체 (예: https://abcdxyz.supabase.co)
+const SUPABASE_KEY  = 'sb_publishable_6kpXwuQBL6CDfCCrSccCjQ_bSMD4CVF';
+
+let sb = null;
+try{
+  if(window.supabase && !SUPABASE_URL.includes('xxxxxxxxxxxx') && !SUPABASE_KEY.includes('여기에')){
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+}catch(e){ console.error('Supabase 초기화 실패', e); }
+
+const AVATARS = ['🏃','🧢','🎽','🥶','🧣','⛄','🔥','🐧'];
+
+/* ---------------- personal storage (localStorage, this device) ---------------- */
+async function getPersonal(key){
+  try{ const v = localStorage.getItem('rm_'+key); return v ? JSON.parse(v) : null; }
+  catch(e){ return null; }
+}
+async function setPersonal(key, value){
+  try{ localStorage.setItem('rm_'+key, JSON.stringify(value)); return true; }
+  catch(e){ console.error('personal set 실패', key, e); return false; }
+}
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function genRoomCode(){ return 'WINTER-' + Math.floor(1000 + Math.random()*9000); }
+
+/* ---------------- app state (in-memory cache) ---------------- */
+let profile = null;      // {userId, nickname, avatar, goalKm, unit, roomCode}
+let runs = [];            // personal run history (full detail incl. path)
+let achievementsUnlocked = []; // array of achievement ids
+let pendingSync = [];      // run summaries waiting to sync to Supabase room
+let lastSyncOk = true;
+
+const ACHIEVEMENTS = [
+  {id:'first', icon:'🏅', title:'첫 러닝', check:(r)=>r.length>=1},
+  {id:'streak7', icon:'🔥', title:'7일 연속', check:(r)=>calcStreak(r)>=7},
+  {id:'streak3', icon:'🔥', title:'3일 연속', check:(r)=>calcStreak(r)>=3},
+  {id:'50k', icon:'🌟', title:'50km 달성', check:(r)=>totalKm(r)>=50},
+  {id:'100k', icon:'💯', title:'100km 달성', check:(r)=>totalKm(r)>=100},
+  {id:'10runs', icon:'🏃', title:'10회 러너', check:(r)=>r.length>=10},
+  {id:'night', icon:'🌙', title:'야간 러너', check:(r)=>r.some(x=>{const h=new Date(x.startTs).getHours();return h>=19||h<5;})},
+  {id:'longrun', icon:'🚀', title:'10km 러너', check:(r)=>r.some(x=>x.distKm>=10)},
+  {id:'goal5', icon:'🏆', title:'목표 달성러', check:(r)=>r.some(x=>x.goalKm && x.distKm>=x.goalKm)},
+];
+function totalKm(r){ return r.reduce((s,x)=>s+x.distKm,0); }
+function calcStreak(r){
+  const days = new Set(r.map(x=>todayKey(x.startTs)));
+  let streak=0;
+  let d = new Date();
+  while(true){
+    if(days.has(todayKey(d.getTime()))){ streak++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+/* ---------------- boot ---------------- */
+async function boot(){
+  profile = await getPersonal('profile');
+  if(!profile){
+    renderAvatarPicker();
+    goToScreen('onboard');
+    return;
+  }
+  runs = (await getPersonal('runs')) || [];
+  achievementsUnlocked = (await getPersonal('achievements')) || [];
+  pendingSync = (await getPersonal('pendingSync')) || [];
+  goToScreen('home');
+  await renderHome();
+  renderRunStart();
+  await trySyncPending();
+  if(!sb) showToast('⚠️ Supabase 설정이 비어있어요. 코드 상단 SUPABASE_URL/KEY를 채워주세요');
+  else if(profile.roomCode) subscribeRoomRealtime(profile.roomCode);
+  window.addEventListener('online', trySyncPending);
+}
+boot();
+
+let selectedAvatar = AVATARS[0];
+function renderAvatarPicker(){
+  const seg = document.getElementById('ob-avatar-seg');
+  seg.innerHTML = AVATARS.slice(0,4).map((a,i)=>`<button class="${i===0?'active':''}" onclick="pickAvatar('${a}',this)">${a}</button>`).join('');
+}
+function pickAvatar(a, btn){
+  selectedAvatar = a;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+async function finishOnboarding(){
+  const nickname = document.getElementById('ob-nickname').value.trim();
+  if(!nickname){ showToast('닉네임을 입력해주세요'); return; }
+  const goalKm = parseFloat(document.getElementById('ob-goal').value) || 5.0;
+  profile = { userId: uid(), nickname, avatar: selectedAvatar, goalKm, unit:'km', roomCode:null };
+  await setPersonal('profile', profile);
+  await setPersonal('runs', []);
+  await setPersonal('achievements', []);
+  await setPersonal('pendingSync', []);
+  runs = []; achievementsUnlocked = []; pendingSync = [];
+  goToScreen('home');
+  await renderHome();
+  renderRunStart();
+}
+
+/* ---------------- navigation ---------------- */
+function goToScreen(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const target = document.getElementById('screen-'+screen);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    n.classList.toggle('active', n.dataset.screen===screen);
+  });
+  window.scrollTo(0,0);
+}
+async function goTo(screen){
+  goToScreen(screen);
+  if(screen==='home') await renderHome();
+  if(screen==='run-start') renderRunStart();
+  if(screen==='rank') await renderRank();
+  if(screen==='profile') renderProfile();
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(showToast._h);
+  showToast._h=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ---------------- settings ---------------- */
+function openSettings(){
+  document.getElementById('set-nickname').value = profile.nickname;
+  document.getElementById('set-goal').value = profile.goalKm;
+  setUnit(profile.unit, true);
+  document.getElementById('settings-modal').classList.add('active');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function setUnit(u, silent){
+  document.getElementById('unit-km').classList.toggle('active', u==='km');
+  document.getElementById('unit-mi').classList.toggle('active', u==='mi');
+  if(!silent) profile.unit = u;
+}
+async function saveSettings(){
+  profile.nickname = document.getElementById('set-nickname').value.trim() || profile.nickname;
+  profile.goalKm = parseFloat(document.getElementById('set-goal').value) || profile.goalKm;
+  profile.unit = document.getElementById('unit-km').classList.contains('active') ? 'km' : 'mi';
+  await setPersonal('profile', profile);
+  closeModal('settings-modal');
+  showToast('설정을 저장했어요');
+  await renderHome(); renderProfile(); renderRunStart();
+  if(profile.roomCode) await syncMyStatsToRoom();
+}
+
+/* ---------------- room (real shared storage) ---------------- */
+function openRoomModal(){
+  document.getElementById('room-modal-code').textContent = profile.roomCode || '아직 없음';
+  document.getElementById('room-modal').classList.add('active');
+}
+async function regenerateRoom(){
+  const code = genRoomCode();
+  const ok = await ensureRoomExists(code);
+  if(!ok){ showToast('Supabase 연결을 확인해주세요 (코드 상단 설정)'); return; }
+  profile.roomCode = code;
+  await setPersonal('profile', profile);
+  document.getElementById('room-modal-code').textContent = code;
+  showToast('새 러닝방 ' + code + ' 을 만들었어요');
+  await syncMyStatsToRoom();
+  subscribeRoomRealtime(code);
+  await renderRank();
+}
+async function joinRoom(){
+  const v = document.getElementById('join-code').value.trim().toUpperCase();
+  if(!v){ showToast('코드를 입력해주세요'); return; }
+  const ok = await ensureRoomExists(v);
+  if(!ok){ showToast('Supabase 연결을 확인해주세요 (코드 상단 설정)'); return; }
+  profile.roomCode = v;
+  await setPersonal('profile', profile);
+  document.getElementById('room-modal-code').textContent = v;
+  showToast(v + ' 방에 참가했어요');
+  await syncMyStatsToRoom();
+  subscribeRoomRealtime(v);
+  await renderRank();
+  closeModal('room-modal');
+}
+async function ensureRoomExists(code){
+  if(!sb) return false;
+  try{
+    const { data: existing } = await sb.from('rooms').select('code').eq('code', code).maybeSingle();
+    if(!existing){
+      const { error } = await sb.from('rooms').insert({ code });
+      if(error) throw error;
+    }
+    return true;
+  }catch(e){ console.error('방 생성 실패', e); return false; }
+}
+function computeMyStats(){
+  return {
+    name: profile.nickname,
+    avatar: profile.avatar,
+    total: Math.round(totalKm(runs)*100)/100,
+    count: runs.length,
+    longest: Math.round(runs.reduce((m,r)=>Math.max(m,r.distKm),0)*100)/100,
+    lastActivityTs: runs.length ? runs[runs.length-1].endTs : 0,
+  };
+}
+async function syncMyStatsToRoom(feedEvent){
+  if(!profile.roomCode){ return true; }
+  if(!sb){ return false; }
+  try{
+    const stats = computeMyStats();
+    const { error: upErr } = await sb.from('room_members').upsert({
+      room_code: profile.roomCode,
+      user_id: profile.userId,
+      name: stats.name,
+      avatar: stats.avatar,
+      total: stats.total,
+      count: stats.count,
+      longest: stats.longest,
+      last_activity_ts: stats.lastActivityTs,
+    }, { onConflict: 'room_code,user_id' });
+    if(upErr) throw upErr;
+    if(feedEvent){
+      const { error: feedErr } = await sb.from('feed_events').insert({
+        room_code: profile.roomCode,
+        user_id: feedEvent.userId,
+        name: feedEvent.name,
+        avatar: feedEvent.avatar,
+        text: feedEvent.text,
+        ts: feedEvent.ts,
+      });
+      if(feedErr) throw feedErr;
+    }
+    return true;
+  }catch(e){ console.error('동기화 실패', e); return false; }
+}
+
+/* ---------------- realtime (friends see updates instantly) ---------------- */
+let realtimeChannel = null;
+function subscribeRoomRealtime(code){
+  if(!sb || !code) return;
+  if(realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+  realtimeChannel = sb.channel('room-'+code)
+    .on('postgres_changes', {event:'*', schema:'public', table:'room_members', filter:`room_code=eq.${code}`}, ()=>{
+      if(document.getElementById('screen-rank').classList.contains('active')) renderRank();
+    })
+    .on('postgres_changes', {event:'*', schema:'public', table:'feed_events', filter:`room_code=eq.${code}`}, ()=>{
+      if(document.getElementById('screen-home').classList.contains('active')) renderHome();
+    })
+    .subscribe();
+}
+async function trySyncPending(){
+  if(pendingSync.length===0) return;
+  const remaining = [];
+  for(const item of pendingSync){
+    const ok = await syncMyStatsToRoom(item.feedEvent);
+    if(!ok) remaining.push(item);
+  }
+  pendingSync = remaining;
+  await setPersonal('pendingSync', pendingSync);
+  if(remaining.length===0) showToast('밀렸던 기록을 친구방에 동기화했어요');
+  updateSyncBadge();
+}
+function updateSyncBadge(){
+  const badge = document.getElementById('pending-badge');
+  if(badge) badge.textContent = pendingSync.length ? `· 동기화 대기 ${pendingSync.length}건` : '';
+}
+
+/* ---------------- distance / time helpers ---------------- */
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const dLat = (lat2-lat1) * Math.PI/180;
+  const dLon = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R*c;
+}
+function fmtTime(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  const s = sec%60;
+  if(h>0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function fmtPace(secPerKm){
+  if(!isFinite(secPerKm) || secPerKm<=0) return `-'--"`;
+  const m = Math.floor(secPerKm/60);
+  const s = Math.round(secPerKm%60);
+  return `${m}'${String(s).padStart(2,'0')}"`;
+}
+function fmtDateKR(ts){
+  const d = new Date(ts);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+function todayKey(ts){ const d=new Date(ts); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function pathToSvg(path, w=280, h=160){
+  if(!path || path.length<2) return '';
+  const lats = path.map(p=>p[0]), lngs = path.map(p=>p[1]);
+  const minLat=Math.min(...lats), maxLat=Math.max(...lats);
+  const minLng=Math.min(...lngs), maxLng=Math.max(...lngs);
+  const padding = 14;
+  const spanLat = Math.max(0.00001, maxLat-minLat);
+  const spanLng = Math.max(0.00001, maxLng-minLng);
+  const pts = path.map(([lat,lng])=>{
+    const x = padding + ((lng-minLng)/spanLng) * (w-padding*2);
+    const y = padding + (1 - (lat-minLat)/spanLat) * (h-padding*2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+  const [sx,sy] = pts.split(' ')[0].split(',');
+  const last = pts.split(' ').slice(-1)[0].split(',');
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <polyline points="${pts}" fill="none" stroke="#FF5A36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${sx}" cy="${sy}" r="4.5" fill="#1FA25A"/>
+    <circle cx="${last[0]}" cy="${last[1]}" r="4.5" fill="#0F2233"/>
+  </svg>`;
+}
+
+/* ---------------- wake lock (stage 4 best-effort) ---------------- */
+let wakeLock = null;
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  }catch(e){ /* not fatal */ }
+}
+function releaseWakeLock(){
+  if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock=null; }
+}
+document.addEventListener('visibilitychange', async ()=>{
+  if(document.visibilityState==='visible' && run && !run.isPaused){
+    await requestWakeLock();
+  }
+});
+
+/* ---------------- run state ---------------- */
+let run = null;
+let watchId = null;
+
+function renderRunStart(){
+  document.getElementById('rs-goal-val').textContent = profile.goalKm.toFixed(1);
+  const pill = document.getElementById('gps-pill');
+  const pillText = document.getElementById('gps-pill-text');
+  pill.classList.remove('ready');
+  pillText.textContent = '🛰️ GPS 준비 중';
+  if(!('geolocation' in navigator)){
+    pillText.textContent = '⚠️ 이 브라우저는 GPS를 지원하지 않아요';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    ()=>{ pill.classList.add('ready'); pillText.textContent = '🛰️ GPS 연결 완료'; },
+    ()=>{ pillText.textContent = '⚠️ 위치 권한을 허용해주세요'; },
+    {enableHighAccuracy:true, timeout:8000}
+  );
+}
+async function adjustGoal(delta){
+  profile.goalKm = Math.max(0.5, Math.round((profile.goalKm + delta)*10)/10);
+  await setPersonal('profile', profile);
+  document.getElementById('rs-goal-val').textContent = profile.goalKm.toFixed(1);
+}
+
+async function startRun(){
+  if(!('geolocation' in navigator)){
+    showToast('이 브라우저는 위치 기능을 지원하지 않아요');
+    return;
+  }
+  run = {
+    id: uid(),
+    goalKm: profile.goalKm,
+    startTs: Date.now(),
+    distKm: 0,
+    path: [],
+    lastPoint: null,
+    activeSec: 0,
+    pausedSec: 0,
+    isPaused: false,
+    pauseStartedAt: null,
+    tickHandle: null,
+  };
+  await requestWakeLock();
+  goToScreen('run-active');
+  document.getElementById('run-dist').textContent = '0.00';
+  document.getElementById('run-time').textContent = '00:00';
+  document.getElementById('run-pace').textContent = `-'--"`;
+  setRunStatus('tracking', '🛰️ GPS 측정 중');
+  document.getElementById('pause-btn').textContent = '⏸ 일시정지';
+
+  watchId = navigator.geolocation.watchPosition(onPosition, onPositionError, {
+    enableHighAccuracy:true, maximumAge:1000, timeout:15000
+  });
+  run.tickHandle = setInterval(updateRunTimer, 1000);
+}
+
+function onPosition(pos){
+  if(!run || run.isPaused) return;
+  const {latitude, longitude, accuracy} = pos.coords;
+  if(accuracy && accuracy > 60){
+    setRunStatus('tracking', `🛰️ 정확도 개선 중 (±${Math.round(accuracy)}m)`);
+    return;
+  }
+  const point = {lat:latitude, lng:longitude, t:Date.now()};
+  if(run.lastPoint){
+    const d = haversineKm(run.lastPoint.lat, run.lastPoint.lng, point.lat, point.lng);
+    if(d > 0.002 && d < 0.3){
+      run.distKm += d;
+    }
+  }
+  run.lastPoint = point;
+  run.path.push([point.lat, point.lng]);
+  document.getElementById('run-dist').textContent = run.distKm.toFixed(2);
+  setRunStatus('tracking', '🛰️ GPS 측정 중');
+}
+function onPositionError(){
+  setRunStatus('error', '⚠️ GPS 신호를 찾는 중이에요');
+}
+function setRunStatus(cls, text){
+  const el = document.getElementById('run-status');
+  el.className = 'run-status ' + cls;
+  el.textContent = text;
+}
+function updateRunTimer(){
+  if(!run || run.isPaused) return;
+  run.activeSec = Math.floor((Date.now() - run.startTs - run.pausedSec)/1000);
+  document.getElementById('run-time').textContent = fmtTime(run.activeSec);
+  const pace = run.distKm > 0.01 ? (run.activeSec / run.distKm) : 0;
+  document.getElementById('run-pace').textContent = fmtPace(pace);
+}
+function togglePause(){
+  if(!run) return;
+  const btn = document.getElementById('pause-btn');
+  if(!run.isPaused){
+    run.isPaused = true;
+    run.pauseStartedAt = Date.now();
+    setRunStatus('paused', '⏸ 일시정지됨');
+    btn.textContent = '▶ 러닝 재개';
+  }else{
+    run.isPaused = false;
+    run.pausedSec += (Date.now() - run.pauseStartedAt);
+    run.lastPoint = null;
+    setRunStatus('tracking', '🛰️ GPS 측정 중');
+    btn.textContent = '⏸ 일시정지';
+  }
+}
+function stopRun(){
+  if(!run) return;
+  if(watchId!==null){ navigator.geolocation.clearWatch(watchId); watchId=null; }
+  if(run.tickHandle){ clearInterval(run.tickHandle); }
+  if(run.isPaused){ run.pausedSec += (Date.now()-run.pauseStartedAt); }
+  releaseWakeLock();
+  run.endTs = Date.now();
+  run.durationSec = Math.floor((run.endTs - run.startTs - run.pausedSec)/1000);
+  showResult(run);
+}
+
+function showResult(r){
+  document.getElementById('res-dist').textContent = r.distKm.toFixed(2);
+  document.getElementById('res-time').textContent = fmtTime(r.durationSec);
+  const pace = r.distKm>0.01 ? r.durationSec / r.distKm : 0;
+  document.getElementById('res-pace').textContent = fmtPace(pace);
+  const badgeEl = document.getElementById('res-badge');
+  badgeEl.innerHTML = r.distKm >= r.goalKm
+    ? `<div class="badge">🏆 ${r.goalKm.toFixed(1)}km 목표 달성!</div>`
+    : `<div class="badge" style="color:#2E7DE0;">계속 힘내요! 목표까지 ${(r.goalKm-r.distKm).toFixed(2)}km 남았어요</div>`;
+  const pathWrap = document.getElementById('res-path-wrap');
+  const svg = pathToSvg(r.path);
+  if(svg){ pathWrap.style.display='block'; document.getElementById('res-path-svg').innerHTML = svg; }
+  else{ pathWrap.style.display='none'; }
+  document.getElementById('res-memo').value = '';
+  goToScreen('result');
+}
+
+async function saveRun(){
+  if(!run) return;
+  const btn = document.getElementById('save-run-btn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  const memo = document.getElementById('res-memo').value.trim();
+  const record = {
+    id: run.id,
+    startTs: run.startTs,
+    endTs: run.endTs,
+    distKm: Math.round(run.distKm*100)/100,
+    durationSec: run.durationSec,
+    goalKm: run.goalKm,
+    memo,
+    path: run.path,
+  };
+  runs.push(record);
+  await setPersonal('runs', runs);
+
+  const newlyUnlocked = ACHIEVEMENTS.filter(a=>!achievementsUnlocked.includes(a.id) && a.check(runs));
+  if(newlyUnlocked.length){
+    achievementsUnlocked = achievementsUnlocked.concat(newlyUnlocked.map(a=>a.id));
+    await setPersonal('achievements', achievementsUnlocked);
+  }
+
+  const feedEvent = {
+    userId: profile.userId, name: profile.nickname, avatar: profile.avatar,
+    text: `${record.distKm.toFixed(2)}km를 달렸습니다.`, ts: Date.now(),
+    cheers: {fire:0, clap:0, strong:0},
+  };
+  if(profile.roomCode){
+    const ok = await syncMyStatsToRoom(feedEvent);
+    if(!ok){
+      pendingSync.push({feedEvent});
+      await setPersonal('pendingSync', pendingSync);
+      showToast('오프라인이라 친구방 동기화를 나중에 다시 시도할게요');
+    }
+  }
+
+  btn.disabled = false; btn.textContent = '기록 저장';
+  showToast('러닝 기록을 저장했어요 🎉' + (newlyUnlocked.length? ` 새 업적 ${newlyUnlocked.length}개 달성!`:''));
+  run = null;
+  await goTo('home');
+}
+
+/* ---------------- home ---------------- */
+async function renderHome(){
+  document.getElementById('home-date').textContent =
+    new Date().toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'long'}) + ' · 겨울방학 러닝';
+
+  const today = todayKey(Date.now());
+  const todayKm = runs.filter(r=>todayKey(r.startTs)===today).reduce((s,r)=>s+r.distKm,0);
+  document.getElementById('home-today-km').textContent = todayKm.toFixed(1);
+  document.getElementById('home-goal-lbl').textContent = `/ ${profile.goalKm.toFixed(1)} km 목표`;
+  const pct = Math.min(100, (todayKm/profile.goalKm)*100);
+  document.getElementById('home-progress').style.width = pct+'%';
+
+  const days = ['일','월','화','수','목','금','토'];
+  const streakEl = document.getElementById('streak-row');
+  streakEl.innerHTML = '';
+  const now = new Date();
+  for(let i=6;i>=0;i--){
+    const d = new Date(now); d.setDate(now.getDate()-i);
+    const ran = runs.some(r=>todayKey(r.startTs)===todayKey(d.getTime()));
+    streakEl.innerHTML += `<div class="streak-day"><div class="pip ${ran?'on':''}">${ran?'🔥':''}</div>${days[d.getDay()]}</div>`;
+  }
+
+  const feedEl = document.getElementById('feed-list');
+  const hintEl = document.getElementById('feed-hint');
+  if(!profile.roomCode){
+    feedEl.innerHTML = `<div class="empty-state">아직 러닝방이 없어요. '순위' 탭에서 방을 만들고 친구를 초대해보세요.</div>`;
+    hintEl.textContent = '';
+    return;
+  }
+  if(!sb){
+    feedEl.innerHTML = `<div class="empty-state">Supabase 연결 설정이 필요해요 (코드 상단 참고).</div>`;
+    hintEl.textContent = '';
+    return;
+  }
+  const { data: feed, error } = await sb.from('feed_events')
+    .select('*').eq('room_code', profile.roomCode)
+    .order('created_at', {ascending:false}).limit(6);
+  if(error || !feed || feed.length===0){
+    feedEl.innerHTML = `<div class="empty-state">${error? '피드를 불러오지 못했어요.' : '아직 활동이 없어요. 첫 러닝을 시작해보세요!'}</div>`;
+  } else {
+    feedEl.innerHTML = feed.map(f=>`
+      <div class="feed-item">
+        <div class="feed-avatar">${f.avatar||'🏃'}</div>
+        <div>
+          <div class="feed-text"><b>${escapeHtml(f.name||'러너')}</b>${f.name===profile.nickname?'':'가'} ${escapeHtml(f.text||'')}</div>
+          <div class="feed-time">${timeAgo(f.ts)}</div>
+          <div class="feed-cheers">
+            <button class="cheer-pill" onclick="cheerFeed('${f.id}','fire')">🔥 ${f.fire||0}</button>
+            <button class="cheer-pill" onclick="cheerFeed('${f.id}','clap')">👏 ${f.clap||0}</button>
+            <button class="cheer-pill" onclick="cheerFeed('${f.id}','strong')">💪 ${f.strong||0}</button>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  hintEl.textContent = `러닝방 ${profile.roomCode} · Supabase로 친구들과 실시간 공유돼요.`;
+}
+async function cheerFeed(id, type){
+  if(!sb) return;
+  try{
+    const { data: row } = await sb.from('feed_events').select(type).eq('id', id).maybeSingle();
+    const newVal = (row ? (row[type]||0) : 0) + 1;
+    await sb.from('feed_events').update({[type]: newVal}).eq('id', id);
+    await renderHome();
+  }catch(e){ console.error('응원 실패', e); }
+}
+function timeAgo(ts){
+  const diff = Math.floor((Date.now()-ts)/1000);
+  if(diff<60) return '방금 전';
+  if(diff<3600) return Math.floor(diff/60)+'분 전';
+  if(diff<86400) return Math.floor(diff/3600)+'시간 전';
+  return Math.floor(diff/86400)+'일 전';
+}
+
+/* ---------------- ranking (real shared data) ---------------- */
+let rankTab = 'total';
+function setRankTab(t){ rankTab = t; renderRank(); }
+async function renderRank(){
+  document.getElementById('rank-room-code').textContent = profile.roomCode || '방을 만들어보세요';
+  const dotEl = document.getElementById('sync-dot');
+  const textEl = document.getElementById('sync-text');
+  if(!profile.roomCode){
+    dotEl.className = 'sync-dot off';
+    textEl.textContent = '아직 참가한 러닝방이 없어요';
+    document.getElementById('rank-list').innerHTML = `<div class="empty-state">방을 만들거나 친구의 코드로 참가해보세요.</div>`;
+    return;
+  }
+  if(!sb){
+    dotEl.className = 'sync-dot off';
+    textEl.textContent = 'Supabase 연결 설정이 필요해요';
+    document.getElementById('rank-list').innerHTML = `<div class="empty-state">코드 상단 SUPABASE_URL/KEY를 채워주세요.</div>`;
+    return;
+  }
+  await syncMyStatsToRoom();
+  const { data: rows, error } = await sb.from('room_members').select('*').eq('room_code', profile.roomCode);
+  if(error){
+    dotEl.className = 'sync-dot off';
+    textEl.textContent = '동기화 실패 · 네트워크를 확인해주세요';
+    lastSyncOk = false;
+  } else {
+    dotEl.className = 'sync-dot' + (pendingSync.length ? ' pending' : '');
+    textEl.textContent = pendingSync.length ? `동기화 대기 중 (${pendingSync.length}건)` : '친구들과 실시간으로 연동 중';
+    lastSyncOk = true;
+  }
+  const members = (rows||[]).map(m=>({
+    name: m.name, avatar: m.avatar,
+    total: Number(m.total)||0, count: Number(m.count)||0, longest: Number(m.longest)||0,
+    me: m.user_id === profile.userId,
+  }));
+  const metricLabel = {total:'km', count:'회', longest:'km'};
+  const sorted = members.sort((a,b)=>b[rankTab]-a[rankTab]);
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.metric===rankTab));
+  document.getElementById('rank-list').innerHTML = sorted.length ? sorted.map((p,i)=>`
+    <div class="rank-row ${p.me?'me':''}">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-avatar">${p.avatar||'🏃'}</div>
+      <div class="rank-name">${escapeHtml(p.name||'러너')}${p.me?' (나)':''}</div>
+      <div class="rank-val">${(p[rankTab]||0).toFixed(rankTab==='count'?0:1)}${metricLabel[rankTab]}</div>
+    </div>
+  `).join('') : `<div class="empty-state">아직 아무도 뛰지 않았어요. 첫 기록을 남겨보세요!</div>`;
+}
+
+/* ---------------- profile / my records ---------------- */
+function renderProfile(){
+  document.getElementById('profile-name').textContent = profile.nickname;
+  document.getElementById('profile-avatar').textContent = profile.avatar;
+  const total = totalKm(runs);
+  const longest = runs.reduce((m,r)=>Math.max(m,r.distKm),0);
+  document.getElementById('p-total').textContent = total.toFixed(1)+' km';
+  document.getElementById('p-count').textContent = runs.length+'회';
+  document.getElementById('p-avg').textContent = (runs.length? total/runs.length : 0).toFixed(1)+' km';
+  document.getElementById('p-longest').textContent = longest.toFixed(1)+' km';
+  updateSyncBadge();
+
+  document.getElementById('achv-grid').innerHTML = ACHIEVEMENTS.map(a=>{
+    const on = achievementsUnlocked.includes(a.id);
+    return `<div class="achv ${on?'unlocked':''}"><div class="ic">${a.icon}</div><div class="t">${a.title}</div></div>`;
+  }).join('');
+
+  const chart = document.getElementById('chart-wrap');
+  const now = new Date();
+  const weeks = [0,0,0,0];
+  runs.forEach(r=>{
+    const diffDays = Math.floor((now - r.startTs)/86400000);
+    const w = Math.floor(diffDays/7);
+    if(w>=0 && w<4) weeks[3-w]+=r.distKm;
+  });
+  const max = Math.max(1, ...weeks);
+  chart.innerHTML = weeks.map((v,i)=>`
+    <div class="chart-bar-col">
+      <div class="chart-bar" style="height:${Math.max(4,(v/max)*90)}px;"></div>
+      <div class="chart-lbl">${i+1}주 전</div>
+    </div>`).reverse().join('');
+
+  const histEl = document.getElementById('history-list');
+  if(runs.length===0){
+    histEl.innerHTML = `<div class="empty-state">아직 기록이 없어요. 첫 러닝을 시작해보세요!</div>`;
+  }else{
+    histEl.innerHTML = [...runs].reverse().map((r)=>{
+      const pace = r.distKm>0.01 ? r.durationSec/r.distKm : 0;
+      const realIdx = runs.indexOf(r);
+      return `<div class="history-row" onclick="showRunDetail(${realIdx})">
+        <div>
+          <div class="m">${r.distKm.toFixed(2)} km</div>
+          <div class="d">${fmtDateKR(r.startTs)}${r.memo? ' · '+escapeHtml(r.memo):''}</div>
+        </div>
+        <div class="p">${fmtTime(r.durationSec)} · ${fmtPace(pace)}/km</div>
+      </div>`;
+    }).join('');
+  }
+}
+function showRunDetail(idx){
+  const r = runs[idx];
+  if(!r) return;
+  const pace = r.distKm>0.01 ? r.durationSec/r.distKm : 0;
+  const svg = pathToSvg(r.path);
+  document.getElementById('detail-content').innerHTML = `
+    <h2>${fmtDateKR(r.startTs)} 러닝</h2>
+    <div class="run-sub-stats" style="margin:14px 0;">
+      <div class="item"><div class="v">${r.distKm.toFixed(2)}</div><div class="l">km</div></div>
+      <div class="item"><div class="v">${fmtTime(r.durationSec)}</div><div class="l">시간</div></div>
+      <div class="item"><div class="v">${fmtPace(pace)}</div><div class="l">페이스</div></div>
+    </div>
+    ${r.memo? `<p class="muted">${escapeHtml(r.memo)}</p>` : ''}
+    ${svg? `<div class="path-svg-wrap">${svg}</div>` : `<p class="muted">경로 데이터가 부족해요.</p>`}
+  `;
+  document.getElementById('detail-modal').classList.add('active');
+}
+</script>
+</body>
+</html>
